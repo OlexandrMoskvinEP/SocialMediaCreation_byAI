@@ -1,4 +1,4 @@
-package com.example.socialmediaapp;
+package com.social_media_app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

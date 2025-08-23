@@ -1,4 +1,4 @@
-package com.example.socialmediaapp.model;
+package com.social_media_app.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
