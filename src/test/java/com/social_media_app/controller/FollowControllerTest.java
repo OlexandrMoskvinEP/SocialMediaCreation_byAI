@@ -1,6 +1,7 @@
 package com.social_media_app.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.social_media_app.config.SecurityConfig;
 import com.social_media_app.exceptions.ConflictException;
 import com.social_media_app.exceptions.GlobalExceptionHandler;
 import com.social_media_app.exceptions.NotFoundException;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,7 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(FollowController.class)
-@Import({GlobalExceptionHandler.class})
+@WithMockUser(username = "testuser")
+@Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class FollowControllerTest {
 
     @Autowired
