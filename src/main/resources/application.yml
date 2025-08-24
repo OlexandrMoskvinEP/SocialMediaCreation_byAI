@@ -26,3 +26,7 @@ logging:
   level:
     org.hibernate.SQL: warn
     org.hibernate.orm.jdbc.bind: warn
+security:
+  jwt:
+    secret: ${JWT_SECRET:change-me-please-change-me-32chars-min}
+    ttl-min: 60
