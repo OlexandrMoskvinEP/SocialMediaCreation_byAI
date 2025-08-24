@@ -27,18 +27,21 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse create(@RequestBody @Valid CreateUserRequest req) {
         User u = users.createUser(req.username());
+
         return UserResponse.from(u);
     }
 
     @GetMapping("/{id}")
     public UserResponse getById(@PathVariable Long id) {
         User u = users.getById(id);
+
         return UserResponse.from(u);
     }
 
     @GetMapping("/by-username/{username}")
     public UserResponse getByUsername(@PathVariable String username) {
         User u = users.getByUsername(username);
+
         return UserResponse.from(u);
     }
 
