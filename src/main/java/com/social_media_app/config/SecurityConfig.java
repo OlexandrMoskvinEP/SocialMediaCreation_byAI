@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,9 +31,10 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/register", "/api/auth/login", "/h2-console/**").permitAll()
                 .requestMatchers("/api/auth/me").authenticated()
-                .anyRequest().permitAll() // keep open for the demo; tighten later
+                .requestMatchers("/api/media/**", "/api/auth/me").authenticated()
+                .anyRequest().permitAll()
         );
-        http.headers(h -> h.frameOptions(f -> f.disable())); // H2 console
+        http.headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
         http.addFilterBefore(jwt, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
