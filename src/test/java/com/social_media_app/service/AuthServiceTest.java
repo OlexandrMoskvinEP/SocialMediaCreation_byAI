@@ -1,6 +1,7 @@
 package com.social_media_app.service;
 
 import com.social_media_app.model.User;
+import com.social_media_app.model.dto.LoginRequest;
 import com.social_media_app.model.dto.RegisterRequest;
 import com.social_media_app.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,8 @@ class AuthServiceTest {
     UserRepository users;
     @Mock
     PasswordEncoder encoder;
+    @Mock
+    JwtService jwt;
 
     @InjectMocks
     AuthService service;
@@ -78,5 +81,30 @@ class AuthServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> service.register(req));
         verify(users, never()).save(any());
+    }
+
+    @Test
+    void login_success() {
+        LoginRequest request = new LoginRequest("alex", "ikhdgi");
+
+        User user = User.builder()
+                .id(1L).username("alex")
+                .email("alex@email.com")
+                .passwordHash("HASHED")
+                .createdAt(Instant.now())
+                .active(true)
+                .build();
+
+        when(users.findByUsername("alex")).thenReturn(java.util.Optional.of(user));
+        when(encoder.matches("ikhdgi", "HASHED")).thenReturn(true);
+        when(jwt.generate("alex")).thenReturn("TOKEN");
+
+        var response = service.login(request);
+
+        assertEquals("TOKEN", response.accessToken());
+        verify(users, times(1)).findByUsername("alex");
+        verify(encoder, times(1)).matches("ikhdgi", "HASHED");
+        verify(jwt, times(1)).generate("alex");
+        verifyNoMoreInteractions(users, encoder, jwt);
     }
 }
