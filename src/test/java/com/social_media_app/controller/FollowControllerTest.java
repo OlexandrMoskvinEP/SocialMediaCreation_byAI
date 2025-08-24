@@ -7,7 +7,9 @@ import com.social_media_app.exceptions.GlobalExceptionHandler;
 import com.social_media_app.exceptions.NotFoundException;
 import com.social_media_app.model.Follow;
 import com.social_media_app.model.User;
+import com.social_media_app.security.JwtFilter;
 import com.social_media_app.service.FollowService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,7 +23,9 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -39,9 +43,22 @@ class FollowControllerTest {
     private MockMvc mvc;
     @Autowired
     private ObjectMapper om;
-
+    @MockitoBean
+    JwtFilter jwtFilter;
     @MockitoBean
     private FollowService followService;
+
+    @BeforeEach
+    void letFilterPass() throws Exception {
+        doAnswer(inv -> {
+            var req   = (jakarta.servlet.ServletRequest)  inv.getArgument(0);
+            var res   = (jakarta.servlet.ServletResponse) inv.getArgument(1);
+            var chain = (jakarta.servlet.FilterChain)     inv.getArgument(2);
+            chain.doFilter(req, res);
+
+            return null;
+        }).when(jwtFilter).doFilter(any(), any(), any());
+    }
 
     @Test
     void follow_returns201_withPayload() throws Exception {

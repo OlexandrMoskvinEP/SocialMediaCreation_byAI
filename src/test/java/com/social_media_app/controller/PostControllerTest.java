@@ -6,7 +6,9 @@ import com.social_media_app.exceptions.GlobalExceptionHandler;
 import com.social_media_app.exceptions.NotFoundException;
 import com.social_media_app.model.Post;
 import com.social_media_app.model.User;
+import com.social_media_app.security.JwtFilter;
 import com.social_media_app.service.PostService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -24,6 +26,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -41,6 +44,20 @@ class PostControllerTest {
     private ObjectMapper om;
     @MockitoBean
     private PostService postService;
+    @MockitoBean
+    JwtFilter jwtFilter;
+
+    @BeforeEach
+    void letFilterPass() throws Exception {
+        doAnswer(inv -> {
+            var req = (jakarta.servlet.ServletRequest) inv.getArgument(0);
+            var res = (jakarta.servlet.ServletResponse) inv.getArgument(1);
+            var chain = (jakarta.servlet.FilterChain) inv.getArgument(2);
+            chain.doFilter(req, res);
+
+            return null;
+        }).when(jwtFilter).doFilter(any(), any(), any());
+    }
 
     @Test
     void create_returns201_andBody() throws Exception {

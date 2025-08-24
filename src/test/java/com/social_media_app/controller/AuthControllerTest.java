@@ -5,19 +5,21 @@ import com.social_media_app.config.SecurityConfig;
 import com.social_media_app.exceptions.GlobalExceptionHandler;
 import com.social_media_app.model.dto.RegisterRequest;
 import com.social_media_app.model.dto.UserResponse;
+import com.social_media_app.security.JwtFilter;
 import com.social_media_app.service.AuthService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -29,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
-@WithMockUser(username = "testuser")
 @Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class AuthControllerTest {
     @Autowired
@@ -38,13 +39,26 @@ class AuthControllerTest {
     ObjectMapper objectMapper;
     @MockitoBean
     AuthService authService;
+    @MockitoBean
+    JwtFilter jwtFilter;
+
+    @BeforeEach
+    void letFilterPass() throws Exception {
+        doAnswer(inv -> {
+            var req   = (jakarta.servlet.ServletRequest)  inv.getArgument(0);
+            var res   = (jakarta.servlet.ServletResponse) inv.getArgument(1);
+            var chain = (jakarta.servlet.FilterChain)     inv.getArgument(2);
+            chain.doFilter(req, res);
+            return null;
+        }).when(jwtFilter).doFilter(any(), any(), any());
+    }
 
     @Test
     void register_success_returns201_andBody() throws Exception {
         var req = new RegisterRequest("alex", "a@a.com", "secret123");
         var resp = new UserResponse(1L, "alex", "a@a.com");
 
-        when(authService.register(ArgumentMatchers.any())).thenReturn(resp);
+        when(authService.register(any())).thenReturn(resp);
 
         mvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -55,7 +69,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.username").value("alex"))
                 .andExpect(jsonPath("$.email").value("a@a.com"));
 
-        verify(authService, times(1)).register(ArgumentMatchers.any());
+        verify(authService, times(1)).register(any());
         verifyNoMoreInteractions(authService);
     }
 
@@ -75,7 +89,7 @@ class AuthControllerTest {
     void register_usernameTaken_mappedTo409() throws Exception {
         var req = new RegisterRequest("alex", "a@a.com", "secret123");
 
-        when(authService.register(ArgumentMatchers.any()))
+        when(authService.register(any()))
                 .thenThrow(new IllegalArgumentException("username taken"));
 
         mvc.perform(post("/api/auth/register")
@@ -83,6 +97,6 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isConflict());
 
-        verify(authService, times(1)).register(ArgumentMatchers.any());
+        verify(authService, times(1)).register(any());
     }
 }

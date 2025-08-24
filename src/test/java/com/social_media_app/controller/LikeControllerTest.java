@@ -5,7 +5,9 @@ import com.social_media_app.config.SecurityConfig;
 import com.social_media_app.exceptions.ConflictException;
 import com.social_media_app.exceptions.GlobalExceptionHandler;
 import com.social_media_app.exceptions.NotFoundException;
+import com.social_media_app.security.JwtFilter;
 import com.social_media_app.service.LikeService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -16,7 +18,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -33,9 +37,22 @@ class LikeControllerTest {
     private MockMvc mvc;
     @Autowired
     private ObjectMapper om;
-
+    @MockitoBean
+    JwtFilter jwtFilter;
     @MockitoBean
     private LikeService likeService;
+
+    @BeforeEach
+    void letFilterPass() throws Exception {
+        doAnswer(inv -> {
+            var req = (jakarta.servlet.ServletRequest) inv.getArgument(0);
+            var res = (jakarta.servlet.ServletResponse) inv.getArgument(1);
+            var chain = (jakarta.servlet.FilterChain) inv.getArgument(2);
+            chain.doFilter(req, res);
+
+            return null;
+        }).when(jwtFilter).doFilter(any(), any(), any());
+    }
 
     @Test
     void like_returns204() throws Exception {
