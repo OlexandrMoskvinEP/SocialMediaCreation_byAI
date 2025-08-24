@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,8 +26,8 @@ class PostRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        alice = userRepository.save(User.builder().username("alice").build());
-        bob = userRepository.save(User.builder().username("bob").build());
+        alice = userRepository.save(getUser2());
+        bob = userRepository.save(getUser1());
 
         postRepository.save(Post.builder().title("A1").body("...").author(alice).build());
         postRepository.save(Post.builder().title("A2").body("...").author(alice).build());
@@ -51,5 +52,12 @@ class PostRepositoryTest {
 
         assertThat(page.getTotalElements()).isEqualTo(3);
         assertThat(page.getContent()).allMatch(p -> p.getAuthor() != null);
+    }
+    private static User getUser1() {
+        return User.builder().username("bob").email("bob@email.com").active(true).createdAt(Instant.now()).passwordHash("oq3ufctv90y4t").build();
+    }
+
+    private static User getUser2() {
+        return User.builder().username("alice").email("alice@email.com").active(true).createdAt(Instant.now()).passwordHash("oq3ufctv90y4t").build();
     }
 }

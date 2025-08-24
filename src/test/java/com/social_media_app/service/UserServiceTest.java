@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -24,6 +26,7 @@ class UserServiceTest {
     @Test
     void createUser_success_whenUsernameIsFree() {
         User created = userService.createUser("alice");
+
         assertThat(created.getId()).isNotNull();
         assertThat(created.getUsername()).isEqualTo("alice");
         assertThat(created.getCreatedAt()).isNotNull();
@@ -31,7 +34,7 @@ class UserServiceTest {
 
     @Test
     void createUser_throwsConflict_whenUsernameTaken() {
-        userRepository.save(User.builder().username("bob").build());
+        userRepository.save(getUser1());
 
         assertThatThrownBy(() -> userService.createUser("bob"))
                 .isInstanceOf(ConflictException.class)
@@ -40,7 +43,7 @@ class UserServiceTest {
 
     @Test
     void getById_returnsUser_whenExists() {
-        User u = userRepository.save(User.builder().username("carol").build());
+        User u = userRepository.save(getUser3());
 
         User found = userService.getById(u.getId());
         assertThat(found.getUsername()).isEqualTo("carol");
@@ -55,11 +58,11 @@ class UserServiceTest {
 
     @Test
     void getByUsername_returnsUser_whenExists() {
-        userRepository.save(User.builder().username("dave").build());
+        userRepository.save(getUser2());
 
-        User found = userService.getByUsername("dave");
+        User found = userService.getByUsername("alice");
         assertThat(found.getId()).isNotNull();
-        assertThat(found.getUsername()).isEqualTo("dave");
+        assertThat(found.getUsername()).isEqualTo("alice");
     }
 
     @Test
@@ -67,5 +70,16 @@ class UserServiceTest {
         assertThatThrownBy(() -> userService.getByUsername("nobody"))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("User not found");
+    }
+    private static User getUser1() {
+        return User.builder().username("bob").email("bob@email.com").active(true).createdAt(Instant.now()).passwordHash("oq3ufctv90y4t").build();
+    }
+
+    private static User getUser2() {
+        return User.builder().username("alice").email("alice@email.com").active(true).createdAt(Instant.now()).passwordHash("oq3ufctv90y4t").build();
+    }
+
+    private static User getUser3() {
+        return User.builder().username("carol").email("carol@email.com").active(true).createdAt(Instant.now()).passwordHash("oq3ufctv90y4t").build();
     }
 }

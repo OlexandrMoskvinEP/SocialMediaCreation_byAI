@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -26,8 +28,8 @@ class PostLikeRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        alice = userRepository.save(User.builder().username("alice").build());
-        bob = userRepository.save(User.builder().username("bob").build());
+        alice = userRepository.save(getUser2());
+        bob = userRepository.save(getUser1());
         post = postRepository.save(Post.builder().title("Hello").body("Body").author(alice).build());
     }
 
@@ -41,5 +43,13 @@ class PostLikeRepositoryTest {
         postLikeRepository.deleteByUserAndPost(bob, post);
         assertThat(postLikeRepository.existsByUserAndPost(bob, post)).isFalse();
         assertThat(postLikeRepository.countByPost(post)).isZero();
+    }
+
+    private static User getUser1() {
+        return User.builder().username("bob").email("bob@email.com").active(true).createdAt(Instant.now()).passwordHash("oq3ufctv90y4t").build();
+    }
+
+    private static User getUser2() {
+        return User.builder().username("alice").email("alice@email.com").active(true).createdAt(Instant.now()).passwordHash("oq3ufctv90y4t").build();
     }
 }
