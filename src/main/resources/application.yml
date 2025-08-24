@@ -4,6 +4,10 @@ spring:
     driver-class-name: org.h2.Driver
     username: admin
     password: admin
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
 
   jpa:
     hibernate:
@@ -30,3 +34,8 @@ security:
   jwt:
     secret: ${JWT_SECRET:change-me-please-change-me-32chars-min}
     ttl-min: 60
+cloud:
+  aws:
+    region: eu-central-1          # pick your region
+    s3:
+      bucket: your-bucket-name    # replace with an existing bucket
